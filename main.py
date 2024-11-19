@@ -42,7 +42,8 @@ from fastapi.staticfiles import StaticFiles
 # app.mount("/css", StaticFiles(directory="resources/css/"), name="static_css")
 # app.mount("/images", StaticFiles(directory="resources/images/"), name="static_images")
 
-
+# 정적 파일 마운트
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 templates = Jinja2Templates(directory="templates/")    
 
