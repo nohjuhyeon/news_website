@@ -3,18 +3,22 @@ from beanie import init_beanie, PydanticObjectId
 from motor.motor_asyncio import AsyncIOMotorClient 
 from pydantic_settings import BaseSettings 
 from models.ict_news import ict_news
-from models.seoul_institute import seoul_institute
+from models.report_list import report_list
 from models.statistic_bank import statistic_bank
 from models.venture_doctors import venture_doctors
+from models.g2b_notice_list import g2b_notice_list
+from models.g2b_preparation_list import g2b_preparation_list
+from models.news_list import news_list
 from utils.paginations import Paginations
 
 class Settings(BaseSettings):                                                                                  
     DATABASE_URL: Optional[str] = None                                              
     CONTAINER_PREFIX: Optional[str] = None 
+    
     async def initialize_database(self):                                         
         client = AsyncIOMotorClient(self.DATABASE_URL)                             
         await init_beanie(database=client.get_default_database(),                  
-                          document_models=[ict_news, seoul_institute, statistic_bank, venture_doctors])
+                          document_models=[ict_news, report_list, statistic_bank, venture_doctors, g2b_notice_list, g2b_preparation_list,news_list])
 
         
     class Config:
@@ -68,12 +72,8 @@ class Database :
             return documents
         return False    
     
-    async def getsbyconditionswithpagination(self
-                                             , conditions:dict, page_number, records_per_page=10) -> [Any]:
-        # find({})
+    async def getsbyconditionswithpagination(self, conditions:dict, page_number, sort_conditions: str = "news_date", records_per_page=10) -> tuple:
         total = await self.model.find(conditions).count()
         pagination = Paginations(total_records=total, current_page=page_number, records_per_page=records_per_page)
-        documents = await self.model.find(conditions).skip(pagination.start_record_number-1).limit(pagination.records_per_page).to_list()
-        if documents:
-            return documents, pagination
-        return pagination    
+        documents = await self.model.find(conditions).sort([(sort_conditions, -1)]).skip(pagination.start_record_number-1).limit(pagination.records_per_page).to_list()
+        return documents, pagination  # 반드시 두 값을 반환해야 함

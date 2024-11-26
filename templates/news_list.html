@@ -1,0 +1,411 @@
+{% extends "template.html"%}
+
+
+
+{% block main_container %}
+<style>
+  .category-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    margin: 0.1rem;
+    font-size: 0.8rem;
+    border-radius: 4px;
+    background-color: #f5f5f5;
+    color: #666666;
+    font-weight: 600;
+}
+
+.category-badge:hover {
+    background-color: #d0e8ff;
+    transition: background-color 0.2s ease;
+}
+
+/* 컨텐츠 래퍼 */
+.content-wrapper {
+    background-color: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    margin: 1rem 0;
+}
+
+/* 링크 버튼 */
+.detail-link-btn {
+    color: #1a73e8;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.detail-link-btn:hover {
+    background-color: #e8f0fe;
+}
+
+/* 테이블 스타일 */
+.table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+/* 검색 박스 */
+.search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+}
+
+.search-box form {
+    display: flex;
+    width: 100%;
+    gap: 10px;
+}
+
+.search-input-group {
+    display: flex;
+    flex: 1;
+    position: relative;
+}
+
+.search-input {
+    padding-right: 40px;
+}
+
+.search-box-icon {
+    position: absolute;
+    right: 0;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    padding: 0 0.75rem;
+    border: none;
+    background: none;
+}
+
+.search-box-icon .fa-search {
+    transform: rotate(0deg) !important;
+    transition: transform 0.2s ease;
+}
+
+/* 필터 버튼 */
+.filter-btn {
+    padding: 0.5rem 1rem;
+    color: #1a73e8;
+    background-color: #fff;
+    border: 1px solid #1a73e8;
+    border-radius: 4px;
+    transition: all 0.2s;
+    white-space: nowrap;
+    height: 38px;
+    display: flex;
+    align-items: center;
+}
+
+/* 폼 요소 */
+.form-select {
+    min-width: 120px;
+}
+
+/* 모달 스타일 */
+.modal-lg {
+    max-width: 800px;
+}
+
+.modal-body {
+    padding: 1.5rem 2rem;
+}
+</style>
+
+<div class="mx-n4 px-4 mx-lg-n6 px-lg-6 bg-body-emphasis pt-7 border-y">
+  <div data-list="{&quot;valueNames&quot;:[&quot;product&quot;,&quot;customer&quot;,&quot;rating&quot;,&quot;review&quot;,&quot;time&quot;],&quot;page&quot;:6}">
+    <div class="row align-items-end justify-content-between pb-5 g-3">
+      <div class="col-auto">
+        <h3>IT 뉴스</h3>
+        <p class="text-body-tertiary lh-sm mb-0">IT 관련 뉴스 모음</p>
+      </div>
+      
+      <div class="col-12 col-md-auto">
+        <div class="d-flex align-items-center gap-3">
+            <button type="button" class="filter-btn" data-bs-toggle="modal" data-bs-target="#filterModal">
+                <i class="fas fa-filter me-2"></i>상세 검색
+                <span class="filter-badge" id="filterCount">0</span>
+            </button>
+            <div class="search-box flex-grow-1">
+                <form class="position-relative" action="/news/" method="get">
+                    <select class="form-select" name="search_type" style="width: auto;">
+                        <option value="news_title" {% if search_type == 'news_title' %}selected{% endif %}>제목</option>
+                        <option value="news_content" {% if search_type == 'news_content' %}selected{% endif %}>내용</option>
+                    </select>
+                    <div class="search-input-group">
+                        <input class="form-control search-input" 
+                               type="search" 
+                               name="keyword" 
+                               placeholder="검색어를 입력하세요..." 
+                               value="{{ keyword if keyword else '' }}"
+                               aria-label="Search">
+                        <button class="btn btn-link search-box-icon" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 상세 검색 모달 -->
+    <div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg"> <!-- modal-lg 클래스 추가 -->
+            <div class="modal-content">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title" id="filterModalLabel"><strong>상세 검색</strong></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="/news/" method="get" id="filterForm">
+                    <div class="modal-body">
+                        <!-- 키워드 검색 필드 추가 -->
+                        <div class="mb-4 row">
+                          <div>
+                            <label class="form-label mb-2 fw-bold">IT 카테고리</label>
+                            <div class="d-flex flex-wrap gap-3">
+                                {% set category_list =['IT_PC/기기', 'IT_게임', 'IT_과학', 'IT_모바일', 'IT_보안', 'IT_비즈니스/정책',
+                                'IT_인터넷/SNS', 'IT_콘텐츠'] %}
+                                {% for category in category_list %}
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" 
+                                           name="category" value="{{ category }}"
+                                           id="it_category_{{ loop.index }}"
+                                           {% if category in selected_category %}checked{% endif %}>
+                                    <label class="form-check-label" for="it_category_{{ loop.index }}">
+                                        {{ category }}
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                          </div>
+                        </div>
+                        <div class="mb-4 row">
+                          <div>
+                            <label class="form-label mb-2 fw-bold">카테고리</label>
+                              <div class="d-flex flex-wrap gap-3">
+                                  {% set category_list =['건강/의료', '경제', '경제/산업', '과학/테크놀로지', '교육',
+                                  '국제', '날씨', '노동', '동물', '문화', '미디어', '사건/사법', '사회', '사회_일반', '스포츠',
+                                  '여성', '오피니언/사설', '장애인', '정치', '환경'] %}
+                                  {% for category in category_list %}
+                                  <div class="form-check">
+                                      <input class="form-check-input" type="checkbox" 
+                                             name="category" value="{{ category }}"
+                                             id="general_category_{{ loop.index }}"
+                                             {% if category in selected_category %}checked{% endif %}>
+                                      <label class="form-check-label" for="general_category_{{ loop.index }}">
+                                          {{ category }}
+                                      </label>
+                                  </div>
+                                  {% endfor %}
+                                </div>
+                          </div>
+                        </div>
+                        <div class="mb-4 row">
+                          <div>
+                            <label class="form-label fw-bold mb-3">키워드 검색</label>
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <select class="form-select" name="search_type">
+                                        <option value="news_title" {% if search_type == 'news_title' %}selected{% endif %}>제목</option>
+                                        <option value="news_content" {% if search_type == 'news_content' %}selected{% endif %}>내용</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-8">
+                                    <input type="search" 
+                                           class="form-control" 
+                                           name="keyword" 
+                                           placeholder="검색어를 입력하세요..."
+                                           value="{{ keyword if keyword else '' }}">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-top-0">
+                        <button type="reset" class="btn btn-outline-secondary">초기화</button>
+                        <button type="submit" class="btn btn-primary">검색</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    </div>
+    <div class="table-responsive mx-n1 px-1 scrollbar">
+      <table class="table fs-9 mb-0 border-top border-translucent">
+        <thead>
+          <tr>
+            <th class="sort white-space-nowrap align-middle" scope="col"></th>
+            <th class="sort white-space-nowrap align-middle" scope="col" style="min-width:360px;" data-sort="product">제목</th>
+            <th class="sort align-middle" scope="col" data-sort="customer" style="min-width:200px;">카테고리</th>
+            <th class="sort align-middle" scope="col" style="max-width:350px;" data-sort="review">날짜</th>
+            <th class="sort text-end pe-0 align-middle" scope="col"></th>
+          </tr>
+        </thead>
+        <tbody class="list" id="table-latest-review-body">
+          {% for item in items %}
+          <tr class="hover-actions-trigger btn-reveal-trigger position-static cursor-pointer" 
+          data-bs-toggle="collapse" data-bs-target="#collapse-{{ loop.index }}" 
+          style="cursor: pointer;">
+          <td class="align-middle product white-space-nowrap py-0">
+            <button class="btn btn-link p-0" type="button" data-bs-toggle="collapse" 
+                    data-bs-target="#collapse-{{ loop.index }}" aria-expanded="false">
+              <i class="fas fa-chevron-down"></i>
+            </button>
+          </td>
+    <td class="align-middle product white-space-nowrap">
+          <a class="fw-semibold" href="">{{ item.news_title }}</a>
+          <div class="mt-2 fs-9 text-body-tertiary">
+            {% if item.news_keywords %}
+            {% for keyword in item.news_keywords %}
+                <span class="category-badge">{{ keyword }}</span>
+            {% endfor %}
+            {% endif %}
+          </div>
+        </td>
+        <td class="align-middle customer white-space-nowrap">
+          <div class="d-flex flex-column">
+            <span>{{ item.category|join(", ") if item.category else "" }}</span>
+          </div>
+        </td>
+        <td class="align-middle review">
+          {{ item.news_date.strftime("%Y-%m-%d") if item.news_date else "" }}
+        </td>
+      </tr>
+      <tr>
+        <td class="align-middle product white-space-nowrap py-0">
+        </td>
+      <td colspan="3" class="p-0">
+          <div class="collapse" id="collapse-{{ loop.index }}">
+            <div class="collapse-content">
+              <div class="content-wrapper">
+                  {% if item.full_summary %}
+                  <div class="content-header">
+                      <h6 class="content-title">
+                          <i class="fas fa-file-alt me-2"></i>요약 내용
+                      </h6>
+                      <a href="/news_detail/{{ item.id }}" class="detail-link-btn">
+                          상세 페이지로 이동
+                          <i class="fas fa-arrow-right"></i>
+                      </a>
+                  </div>
+                  <div>
+                      <p class="content-text">{{ item.full_summary }}</p>
+                  </div>
+                  {% endif %}
+              </div>
+          </div>
+          </div>
+      </td>
+      </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+  <form action="" method="get">
+    {% if search_type %}
+    <input type="hidden" name="search_type" value="{{ search_type }}">
+    {% endif %}
+    
+    {% if keyword %}
+    <input type="hidden" name="keyword" value="{{ keyword }}">
+    {% endif %}
+
+    {% if selected_category %}
+    {% for category in selected_category %}
+    <input type="hidden" name="category" value="{{ category }}">
+    {% endfor %}
+    {% endif %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            <li class="page-item {% if not pagination.has_previous_block %}disabled{% endif %}">
+                <button type="submit" class="page-link" formaction="/news/{{pagination.first_page}}">
+                    <i class="fas fa-angle-double-left"></i>
+                </button>
+            </li>
+            <li class="page-item {% if not pagination.has_previous_page %}disabled{% endif %}">
+                <button type="submit" class="page-link" formaction="/news/{{pagination.previous_page}}">
+                    <i class="fas fa-angle-left"></i>
+                </button>
+            </li>
+
+            {% for page_num in pagination.current_page_range %}
+            <li class="page-item {% if page_num == pagination.current_page %}active{% endif %}">
+                <button type="submit" class="page-link" formaction="/news/{{page_num}}">
+                    {{page_num}}
+                </button>
+            </li>
+            {% endfor %}
+
+            <li class="page-item {% if not pagination.has_next_page %}disabled{% endif %}">
+                <button type="submit" class="page-link" formaction="/news/{{pagination.next_page}}">
+                    <i class="fas fa-angle-right"></i>
+                </button>
+            </li>
+            <li class="page-item {% if not pagination.has_next_block %}disabled{% endif %}">
+                <button type="submit" class="page-link" formaction="/news/{{pagination.last_page}}">
+                    <i class="fas fa-angle-double-right"></i>
+                </button>
+            </li>
+        </ul>
+    </nav>
+</form>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    function updateFilterCount() {
+        // URL 파라미터에서 선택된 카테고리 개수 확인
+        const urlParams = new URLSearchParams(window.location.search);
+        const selectedCategories = urlParams.getAll('category');
+        const filterCount = selectedCategories.length;
+        
+        document.getElementById('filterCount').textContent = filterCount;
+        
+        const filterBtn = document.querySelector('.filter-btn');
+        if (filterCount > 0) {
+            filterBtn.classList.add('active');
+        } else {
+            filterBtn.classList.remove('active');
+        }
+    }
+
+    // 체크박스 변경 시 카운트 업데이트
+    document.querySelectorAll('#filterForm input[type="checkbox"]').forEach(checkbox => {
+        checkbox.addEventListener('change', updateFilterCount);
+    });
+
+    // 초기화 버튼 클릭 시
+    document.querySelector('button[type="reset"]').addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        // 폼 내의 모든 체크박스를 찾아서 체크 해제
+        document.querySelectorAll('#filterForm input[type="checkbox"]').forEach(checkbox => {
+            checkbox.checked = false;
+        });
+        
+        // 검색어 입력 필드 초기화
+        document.querySelectorAll('#filterForm input[type="search"]').forEach(input => {
+            input.value = '';
+        });
+        
+        // select 요소 초기화
+        document.querySelectorAll('#filterForm select').forEach(select => {
+            select.selectedIndex = 0;
+        });
+
+        // 필터 카운트 업데이트
+        document.getElementById('filterCount').textContent = '0';
+        document.querySelector('.filter-btn').classList.remove('active');
+    });
+
+    // 초기 카운트 설정
+    updateFilterCount();
+});
+</script>
+
+{% endblock %}

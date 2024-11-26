@@ -4,7 +4,7 @@ from beanie import Document, Link                   # 데이터베이스의 데�
 # from pydantic import BaseModel, EmailStr
 
 # 개발자 실수로 들어가는 field 제한
-class seoul_institute(Document) :  # 상속을 위한 것                 # 데이터 베이스에서 이용할 값들을 설정
+class report_list(Document) :  # 상속을 위한 것                 # 데이터 베이스에서 이용할 값들을 설정
     news_title : Optional[str] = None 
     news_content : Optional[str] = None 
     news_date : Optional[datetime] = None
@@ -14,5 +14,6 @@ class seoul_institute(Document) :  # 상속을 위한 것                 # 데�
     full_summary : Optional[str] = None
     category : List[str] = None
     news_keywords : List[str] = None
+    news_subject : Optional[str] = None
     class Settings :   
-        name = "seoul_institute"  # collection의 이름
+        name = "report_list"  # collection의 이름

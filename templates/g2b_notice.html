@@ -1,0 +1,441 @@
+{% extends "template.html"%}
+
+{% block main_container %}
+<style>
+    .notice-title {
+        color: #2c3e50;
+        font-weight: 600;
+    }
+    
+    .notice-link {
+        color: #1a73e8;
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+    
+    .notice-link:hover {
+        color: #1557b0;
+    }
+    
+    .notice-meta {
+        color: #6c757d;
+        font-size: 0.85rem;
+    }
+        
+    .content-wrapper {
+        background-color: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 0.5rem;
+        margin: 1rem 0;
+    }
+    
+    .detail-link-btn {
+        color: #1a73e8;
+        text-decoration: none;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        transition: background-color 0.2s;
+    }
+    
+    .detail-link-btn:hover {
+        background-color: #e8f0fe;
+    }
+    
+    .table th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+    }
+    /* ... existing styles ... */
+   
+    .notice-badge {
+        font-size: 0.8rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+    }
+    
+    .notice-badge-ai {
+        background-color: #e7f3ff;
+        color: #0066cc;
+    }
+    
+    .notice-badge-review {
+        background-color: #fff3e0;
+        color: #e65100;
+    }
+    
+    /* hover 효과를 추가하고 싶다면 */
+    .notice-badge:hover {
+        background-color: #d0e8ff;  /* 약간 더 진한 색상 */
+        transition: background-color 0.2s ease;
+    }
+    .search-box {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 10px;  /* 요소들 사이 간격 */
+    }
+
+    .search-box form {
+        display: flex;
+        width: 100%;
+        gap: 10px;
+    }
+
+    .search-input-group {
+        display: flex;
+        flex: 1;
+        position: relative;
+    }
+
+    .search-input {
+        padding-right: 40px;
+    }
+
+    .search-box-icon {
+        position: absolute;
+        right: 0;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        padding: 0 0.75rem;
+        border: none;
+        background: none;
+    }
+
+    .search-box-icon .fa-search {
+        transform: rotate(0deg) !important;
+        transition: transform 0.2s ease;
+    }
+    .filter-btn {
+        padding: 0.5rem 1rem;
+        color: #1a73e8;
+        background-color: #fff;
+        border: 1px solid #1a73e8;
+        border-radius: 4px;
+        transition: all 0.2s;
+        white-space: nowrap;  
+        height: 38px;         
+        display: flex;
+        align-items: center;
+    }
+    
+    .search-box {
+        flex: 1;
+    }
+
+    .search-box form {
+        display: flex;
+        gap: 10px;
+        width: 100%;
+    }
+
+    .search-input-group {
+        display: flex;
+        flex: 1;
+        position: relative;
+    }
+
+    .form-select {
+        min-width: 120px;  /* 선택 박스 최소 너비 설정 */
+    }
+    .modal-lg {
+        max-width: 700px;  /* 기본값 800px, 필요시 조정 가능 */
+    }
+    
+    /* 모달 내부 여백 조정 */
+    .modal-body {
+        padding: 1.5rem 2rem;
+    }
+</style>
+
+<div class="mx-n4 px-4 mx-lg-n6 px-lg-6 bg-body-emphasis pt-7 border-y">
+    <div class="row align-items-end justify-content-between pb-5 g-3">
+        <div class="col-auto">
+            <h3 class="mb-2">나라장터 공고</h3>
+            <p class="text-body-tertiary lh-sm mb-0">조달청 나라장터 공고 모음</p>
+        </div>
+        <div class="col-12 col-md-auto">
+            <div class="d-flex align-items-center gap-3">
+                <button type="button" class="filter-btn" data-bs-toggle="modal" data-bs-target="#filterModal">
+                    <i class="fas fa-filter me-2"></i>상세 검색
+                    <span class="filter-badge" id="filterCount">0</span>
+                </button>
+                <div class="search-box flex-grow-1">
+                    <form class="position-relative" action="/g2b_notice/" method="get">
+                        <select class="form-select" name="search_type" style="width: auto;">
+                            <option value="notice_id" {% if search_type == 'notice_id' %}selected{% endif %}>공고 번호</option>
+                            <option value="title" {% if search_type == 'title' %}selected{% endif %}>공고명</option>
+                            <option value="publishing_agency" {% if search_type == 'publishing_agency' %}selected{% endif %}>공고기관</option>
+                            <option value="requesting_agency" {% if search_type == 'requesting_agency' %}selected{% endif %}>수요기관</option>
+                        </select>
+                        <div class="search-input-group">
+                            <input class="form-control search-input" 
+                                   type="search" 
+                                   name="keyword" 
+                                   placeholder="검색어를 입력하세요..." 
+                                   value="{{ keyword if keyword else '' }}"
+                                   aria-label="Search">
+                            <button class="btn btn-link search-box-icon" type="submit">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 상세 검색 모달 -->
+        <div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg"> <!-- modal-lg 클래스 추가 -->
+                <div class="modal-content">
+                    <div class="modal-header border-bottom-0">
+                        <h5 class="modal-title" id="filterModalLabel"><strong>상세 검색</strong></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form action="/g2b_notice/" method="get" id="filterForm">
+                        <div class="modal-body">
+                            <!-- 키워드 검색 필드 추가 -->
+                            <div class="mb-4 row">
+                                <div class='col-md-6'>
+                                    <label class="form-label mb-2 fw-bold">공고 유형</label>
+                                    <div class="d-flex gap-3">
+                                        {% set notice_classes = ['입찰 공고', '사전 규격'] %}
+                                        {% for class in notice_classes %}
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" 
+                                                   name="notice_class" value="{{ class }}"
+                                                   id="notice_class_{{ loop.index }}"
+                                                   {% if class in selected_notice_classes %}checked{% endif %}>
+                                            <label class="form-check-label" for="notice_class_{{ loop.index }}">
+                                                {{ class }}
+                                            </label>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                        
+                        
+                                <!-- 공고 타입 -->
+                                <div class="col-md-6">
+                                    <label class="form-label mb-3 fw-bold">공고 타입</label>
+                                    <div class="d-flex gap-3">
+                                        {% set notice_types = ['인공 지능', '검토 필요'] %}
+                                        {% for type in notice_types %}
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" 
+                                                   name="notice_type" value="{{ type }}"
+                                                   id="notice_type_{{ loop.index }}"
+                                                   {% if type in selected_notice_types %}checked{% endif %}>
+                                            <label class="form-check-label" for="notice_type_{{ loop.index }}">
+                                                {{ type }}
+                                            </label>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                                <div class="mb-4">
+                                <label class="form-label fw-bold mb-3">키워드 검색</label>
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <select class="form-select" name="search_type">
+                                            <option value="notice_id" {% if search_type == 'notice_id' %}selected{% endif %}>공고 번호</option>
+                                            <option value="title" {% if search_type == 'title' %}selected{% endif %}>공고명</option>
+                                            <option value="publishing_agency" {% if search_type == 'publishing_agency' %}selected{% endif %}>공고기관</option>
+                                            <option value="requesting_agency" {% if search_type == 'requesting_agency' %}selected{% endif %}>수요기관</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <input type="search" 
+                                               class="form-control" 
+                                               name="keyword" 
+                                               placeholder="검색어를 입력하세요..."
+                                               value="{{ keyword if keyword else '' }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-top-0">
+                            <button type="reset" class="btn btn-outline-secondary">초기화</button>
+                            <button type="submit" class="btn btn-primary">검색</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-responsive mx-n1 px-1 scrollbar">
+        <table class="table table-hover border-top">
+            <thead>
+                <tr>
+                    <th class="text-center" style="width: 20px"></th>
+                    <th class="text-center" style="min-width: 20px">공고 유형</th>
+                    <th class="text-center" style="min-width: 400px">공고명</th>
+                    <th class="text-center" style="width: 150px">등록일</th>
+                    <th class="text-center" style="width: 150px">마감일</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr class="hover-actions-trigger" data-bs-toggle="collapse" 
+                    data-bs-target="#collapse-{{ loop.index }}" 
+                    style="cursor: pointer;">
+                    <td class="text-center">
+                        <i class="fas fa-chevron-down"></i>
+                    </td>
+                    <td class="text-center">{{ item.notice_class }}</td>
+                    <td>
+                        <div class="notice-title mb-1">
+                            {% if item.type and item.type.lower() != 'none' %}
+                            <span class="notice-badge 
+                                {% if '인공 지능' in item.type %}notice-badge-ai
+                                {% elif '검토' in item.type %}notice-badge-review
+                                {% endif %}">
+                                {{ item.type }}
+                            </span>
+                            {% endif %}
+                            {{ item.title }}
+                        </div>
+                    </td>
+                    <td class="text-center">{{ item.start_date if item.start_date else "" }}</td>
+                    <td class="text-center">
+                        {{ item.end_date if item.end_date else "미정" }}
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="5" class="p-0">
+                        <div class="collapse" id="collapse-{{ loop.index }}">
+                            <div class="content-wrapper">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-file-alt me-2"></i><strong>상세 정보</strong>
+                                    </h5>
+                                    <a href="{{ item.link }}" target="_blank" class="detail-link-btn">
+                                        <i class="fas fa-external-link-alt me-1"></i>
+                                        나라장터에서 보기
+                                    </a>
+                                </div>
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <p class="mb-2"><strong>공고 번호: </strong> {{ item.notice_id }}</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        {% if item.publishing_agency %}
+                                        <p class="mb-2"><strong>공고기관: </strong> {{ item.publishing_agency }}</p>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-4">
+                                        {% if item.requesting_agency %}
+                                        <p class="mb-2"><strong>수요기관: </strong> {{ item.requesting_agency }}</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <p class="mb-2"><strong>예산 금액: </strong> {{ item.price }}</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <p class="mb-2"><strong>등록일: </strong> {{ item.start_date }}</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <p class="mb-2"><strong>마감일: </strong> {{ item.end_date if item.end_date else "미정" }}</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 페이지네이션 -->
+<form action="" method="get">
+    {% if search_type %}
+    <input type="hidden" name="search_type" value="{{ search_type }}">
+    {% endif %}
+    
+    {% if keyword %}
+    <input type="hidden" name="keyword" value="{{ keyword }}">
+    {% endif %}
+    
+    {% if selected_notice_classes %}
+    {% for class in selected_notice_classes %}
+    <input type="hidden" name="notice_class" value="{{ class }}">
+    {% endfor %}
+    {% endif %}
+    
+    {% if selected_notice_types %}
+    {% for type in selected_notice_types %}
+    <input type="hidden" name="notice_type" value="{{ type }}">
+    {% endfor %}
+    {% endif %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            <li class="page-item {% if not pagination.has_previous_block %}disabled{% endif %}">
+                <button type="submit" class="page-link" formaction="/g2b_notice/{{pagination.first_page}}">
+                    <i class="fas fa-angle-double-left"></i>
+                </button>
+            </li>
+            <li class="page-item {% if not pagination.has_previous_page %}disabled{% endif %}">
+                <button type="submit" class="page-link" formaction="/g2b_notice/{{pagination.previous_page}}">
+                    <i class="fas fa-angle-left"></i>
+                </button>
+            </li>
+
+            {% for page_num in pagination.current_page_range %}
+            <li class="page-item {% if page_num == pagination.current_page %}active{% endif %}">
+                <button type="submit" class="page-link" formaction="/g2b_notice/{{page_num}}">
+                    {{page_num}}
+                </button>
+            </li>
+            {% endfor %}
+
+            <li class="page-item {% if not pagination.has_next_page %}disabled{% endif %}">
+                <button type="submit" class="page-link" formaction="/g2b_notice/{{pagination.next_page}}">
+                    <i class="fas fa-angle-right"></i>
+                </button>
+            </li>
+            <li class="page-item {% if not pagination.has_next_block %}disabled{% endif %}">
+                <button type="submit" class="page-link" formaction="/g2b_notice/{{pagination.last_page}}">
+                    <i class="fas fa-angle-double-right"></i>
+                </button>
+            </li>
+        </ul>
+    </nav>
+</form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        function updateFilterCount() {
+            const checkedFilters = document.querySelectorAll('#filterForm input[type="checkbox"]:checked').length;
+            document.getElementById('filterCount').textContent = checkedFilters;
+            
+            const filterBtn = document.querySelector('.filter-btn');
+            if (checkedFilters > 0) {
+                filterBtn.classList.add('active');
+            } else {
+                filterBtn.classList.remove('active');
+            }
+        }
+    
+        // 체크박스 변경 시 카운트 업데이트
+        document.querySelectorAll('#filterForm input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', updateFilterCount);
+        });
+    
+        // 초기화 버튼 클릭 시
+        document.querySelector('button[type="reset"]').addEventListener('click', function(e) {
+            setTimeout(updateFilterCount, 0);
+        });
+    
+        // 초기 카운트 설정
+        updateFilterCount();
+    });
+    </script>
+{% endblock %}
