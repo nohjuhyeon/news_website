@@ -247,6 +247,10 @@ async def list_get(request:Request):
     yesterday = today - timedelta(days=2)
     today_str = today.strftime("%Y/%m/%d")
     yesterday_str = yesterday.strftime("%Y/%m/%d")
+    conditions = {}
+    news_list= await collection_news_list.get_condition_limit(conditions,5,"news_date")
+    conditions = {}
+    report_list= await collection_report_list.get_condition_limit(conditions,5,"news_date")
 
     conditions = {"notice_class": {"$regex": '입찰 공고', "$options": "i"}}     
     notice_list= await collection_g2b_notice_list.get_condition_limit(conditions,5,"start_date")
@@ -256,6 +260,8 @@ async def list_get(request:Request):
     return templates.TemplateResponse("main.html", {
         "request": request,
         "notice_list": notice_list,
+        "report_list":report_list,
+        "news_list":news_list,
         "preparation_list": preparation_list,
         'today':today_str,
         'yesterday':yesterday_str,

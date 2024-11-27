@@ -8,15 +8,6 @@
         font-size: 0.9rem;
     }
     
-    .notice-link {
-        color: #1a73e8;
-        text-decoration: none;
-        transition: color 0.2s;
-    }
-    
-    .notice-link:hover {
-        color: #1557b0;
-    }
     
     .notice-meta {
         color: #6c757d;
@@ -155,8 +146,11 @@
         margin-left: 3px; /* 요소 간 간격 최소화 */
     }
     .notice-link {
+        color: #1a73e8;
+        text-decoration: none;
+        transition: color 0.2s;
+        margin-right: 1rem; 
         font-size: 0.75rem; /* 글자 크기를 작게 설정 (12px) */
-        color: #1a73e8; /* 파란색으로 설정 */
         text-decoration: underline; /* 밑줄 추가 */
         cursor: pointer; /* 마우스를 올렸을 때 포인터 표시 */
     }
@@ -166,16 +160,228 @@
         color: #1557b0; /* hover 시 더 진한 파란색 */
         text-decoration: none; /* hover 시 밑줄 제거 */
     }
+    .news-link {
+        color: #1a73e8;
+        text-decoration: none;
+        transition: color 0.2s;
+        margin-right: 1rem; 
+        font-size: 0.9rem; /* 글자 크기를 작게 설정 (12px) */
+        text-decoration: underline; /* 밑줄 추가 */
+        cursor: pointer; /* 마우스를 올렸을 때 포인터 표시 */
+    }
+
+    /* 링크 hover 효과 */
+    .news-link:hover {
+        color: #1557b0; /* hover 시 더 진한 파란색 */
+        text-decoration: none; /* hover 시 밑줄 제거 */
+    }
     
 </style>
+<div class="mb-5">
+    <div class="row align-items-end justify-content-between pb-1 g-3">
+        <div class="col-auto">
+            <h3 class="ml-4"><strong>IT 뉴스</strong></h3>
+        </div>
+        <div class="col-auto">
+            <a class="news-link" href="/news/1">더 보기</a>
+        </div>
+    </div>
+    <div class="table-responsive mx-n1 px-1 scrollbar">
+        <table class="table fs-9 mb-0 border-top border-translucent">
+            <thead>
+                <tr>
+                    <th class="sort white-space-nowrap align-middle" scope="col"></th>
+                    <th class="sort white-space-nowrap align-middle" scope="col" style="width:850px;" data-sort="product">제목</th>
+                    <th class="sort align-middle" scope="col" data-sort="customer" style="width:350px;">카테고리</th>
+                    <th class="sort align-middle" scope="col" style="width:125px;" data-sort="review">날짜</th>
+                </tr>
+            </thead>
+            <tbody class="list" id="table-latest-review-body">
+                {% for item in news_list %}
+                    <tr class="hover-actions-trigger btn-reveal-trigger position-static cursor-pointer" data-bs-toggle="collapse" data-bs-target="#news-collapse-{{ loop.index }}" style="cursor: pointer;">
+                        <td class="align-middle product white-space-nowrap py-0">
+                            <button class="btn btn-link p-0" type="button" data-bs-toggle="collapse" 
+                                data-bs-target="#news-collapse-{{ loop.index }}" aria-expanded="false">
+                            <i class="fas fa-chevron-down"></i>
+                            </button>
+                        </td>
+                        <td class="align-middle product white-space-nowrap">
+                            <a class="fw-semibold" href="">{{ item.news_title }}</a>
+                            <div class="mt-2 fs-9 text-body-tertiary">
+                                {% if item.news_keywords %}
+                                {% for keyword in item.news_keywords %}
+                                    <span class="category-badge">{{ keyword }}</span>
+                                {% endfor %}
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="align-middle customer white-space-nowrap">
+                            <div class="d-flex flex-column">
+                                <span>{{ item.category|join(", ") if item.category else "" }}</span>
+                            </div>
+                        </td>
+                        <td class="align-middle review">
+                            {{ item.news_date.strftime("%Y-%m-%d") if item.news_date else "" }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="align-middle product white-space-nowrap py-0">
+                        </td>
+                        <td colspan="3" class="p-0">
+                            <div class="collapse" id="news-collapse-{{ loop.index }}">
+                                <div class="collapse-content">
+                                    <div class="content-wrapper">
+                                        {% if item.abtraction %}
+                                            <div class="content-header">
+                                                <h6 class="content-title">
+                                                    <i class="fas fa-file-alt me-2"></i>요약 내용
+                                                </h6>
+                                                <form action="" method="get">
+                                                    {% if search_type %}
+                                                    <input type="hidden" name="search_type" value="{{ search_type }}">
+                                                    {% endif %}
+                                                    
+                                                    {% if keyword %}
+                                                    <input type="hidden" name="keyword" value="{{ keyword }}">
+                                                    {% endif %}
+                                                
+                                                    {% if selected_category %}
+                                                    {% for category in selected_category %}
+                                                    <input type="hidden" name="category" value="{{ category }}">
+                                                    {% endfor %}
+                                                    {% endif %}
+                                                    <a type="submit" class="detail-link-btn" href="{{ item.news_link }}" target="_blank" rel="noopener noreferrer">
+                                                        상세 페이지로 이동
+                                                        <i class="fas fa-arrow-right"></i>
+                                                    </a>
+                                                    <!-- <button type="submit" class="detail-link-btn" formaction="/report_detail/{{ item.id }}">
+                                                        상세 페이지로 이동
+                                                        <i class="fas fa-arrow-right"></i>
+                                                    </button> -->                                                    
+                                                </form>
+                                            </div>
+                                            <div>
+                                                <p class="content-text">{{ item.abtraction }}</p>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="mb-5">
+        <div class="row align-items-end justify-content-between pb-1 g-3">
+            <div class="col-auto">
+                <h3 class="ml-4"><strong>서울 연구소 보고서</strong></h3>
+            </div>
+            <div class="col-auto">
+                <a class="news-link" href="/report/1">더 보기</a>
+            </div>
+        </div>
+    <div class="table-responsive mx-n1 px-1 scrollbar">
+        <table class="table fs-9 mb-0 border-top border-translucent">
+            <thead>
+                <tr>
+                    <th class="sort white-space-nowrap align-middle" scope="col"></th>
+                    <th class="sort white-space-nowrap align-middle" scope="col" style="width:850px;" data-sort="product">제목</th>
+                    <th class="sort align-middle" scope="col" data-sort="customer" style="width:350px;">카테고리</th>
+                    <th class="sort align-middle" scope="col" style="width:125px;" data-sort="review">날짜</th>
+                </tr>
+            </thead>
+            <tbody class="list" id="table-latest-review-body">
+                {% for item in report_list %}
+                <tr class="hover-actions-trigger btn-reveal-trigger position-static cursor-pointer" data-bs-toggle="collapse" data-bs-target="#report-collapse-{{ loop.index }}" style="cursor: pointer;">
+                    <td class="align-middle product white-space-nowrap py-0">
+                        <button class="btn btn-link p-0" type="button" data-bs-toggle="collapse" 
+                                data-bs-target="#report-collapse-{{ loop.index }}" aria-expanded="false">
+                        <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </td>
+                    <td class="align-middle product white-space-nowrap">
+                    <a class="fw-semibold" href="">{{ item.news_title }}</a>
+                    <div class="mt-2 fs-9 text-body-tertiary">
+                        {% if item.news_keywords %}
+                        {% for keyword in item.news_keywords %}
+                            <span class="category-badge">{{ keyword }}</span>
+                        {% endfor %}
+                        {% endif %}
+                    </div>
+                    </td>
+                    <td class="align-middle customer white-space-nowrap">
+                    <div class="d-flex flex-column">
+                        <span>{{ item.category|join(", ") if item.category else "" }}</span>
+                    </div>
+                    </td>
+                    <td class="align-middle review">
+                    {{ item.news_date.strftime("%Y-%m-%d") if item.news_date else "" }}
+                    </td>
+                </tr>
+                <tr>
+                    <td class="align-middle product white-space-nowrap py-0">
+                    </td>
+                    <td colspan="3" class="p-0">
+                        <div class="collapse" id="report-collapse-{{ loop.index }}">
+                            <div class="collapse-content">
+                            <div class="content-wrapper">
+                                {% if item.abtraction %}
+                                <div class="content-header">
+                                    <h6 class="content-title">
+                                        <i class="fas fa-file-alt me-2"></i>요약 내용
+                                    </h6>
+                                    <form action="" method="get">
+                                        {% if search_type %}
+                                        <input type="hidden" name="search_type" value="{{ search_type }}">
+                                        {% endif %}
+                                        
+                                        {% if keyword %}
+                                        <input type="hidden" name="keyword" value="{{ keyword }}">
+                                        {% endif %}
+                                    
+                                        {% if selected_category %}
+                                        {% for category in selected_category %}
+                                        <input type="hidden" name="category" value="{{ category }}">
+                                        {% endfor %}
+                                        {% endif %}
+                                        <a type="submit" class="detail-link-btn" href="{{ item.news_link }}" target="_blank" rel="noopener noreferrer">
+                                            상세 페이지로 이동
+                                            <i class="fas fa-arrow-right"></i>
+                                        </a>
+                                        <!-- <button type="submit" class="detail-link-btn" formaction="/report_detail/{{ item.id }}">
+                                            상세 페이지로 이동
+                                            <i class="fas fa-arrow-right"></i>
+                                        </button> -->
+                                    </form>
+
+                                </div>
+                                <div>
+                                    <p class="content-text">{{ item.abtraction }}</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 <div class="row"> <!-- 부모 컨테이너에 row 클래스 추가 -->
+    <h3 class="ml-4"><strong>최근 올라온 공고</strong></h3>
     <div class="col mx-n4 px-4 mx-lg-n6 px-lg-6 bg-body-emphasis pt-7 border-y">
         <div class="row align-items-end justify-content-between pb-1 g-3">
             <div class="col-auto">
-                <h5 class=""><strong>최근 올라온 입찰 공고</strong></h5>
+                <div class="text-body-tertiary lh-sm mt-3 mb-0 ml-4" style="color: #495057;"><strong>입찰 공고</strong></div>
             </div>
             <div class="col-auto">
-                <a class="notice-link m-2" href="/g2b_notice/1">자세히 보기</a>
+                <a class="notice-link" href="/g2b_notice/1">자세히 보기</a>
             </div>
         </div>
         <div class="table-responsive mx-n1 px-1 scrollbar">
@@ -188,9 +394,7 @@
                 </thead>
                 <tbody>
                     {% for item in notice_list %}
-                    <tr class="hover-actions-trigger" data-bs-toggle="collapse" 
-                        data-bs-target="#notice-collapse-{{ loop.index }}" 
-                        style="cursor: pointer;">
+                    <tr class="hover-actions-trigger style="cursor: pointer;">
                         <td>
                             <div class="notice-title mb-1">
                                 {% if item.type and item.type.lower() != 'none' %}
@@ -219,9 +423,9 @@
     <div class="col mx-n4 px-4 mx-lg-n6 px-lg-6 bg-body-emphasis pt-7 border-y">
         <div class="row align-items-end justify-content-between pb-1 g-3">
             <div class="col-auto">
-                <h5><strong>최근 올라온 사전 규격 공고</strong></h5>
+                <div class="text-body-tertiary lh-sm mt-3 mb-0 ml-4"><strong>사전 규격 공고</strong></div>
             </div>
-            <div class="col-auto m-2">
+            <div class="col-auto">
                 <a class="notice-link" href="/g2b_notice/1">자세히 보기</a>
             </div>
         </div>
@@ -235,9 +439,7 @@
                 </thead>
                 <tbody>
                     {% for item in preparation_list %}
-                    <tr class="hover-actions-trigger" data-bs-toggle="collapse" 
-                        data-bs-target="#preparation-collapse-{{ loop.index }}" 
-                        style="cursor: pointer;">
+                    <tr class="hover-actions-trigger style="cursor: pointer;">
                         <td>
                             <div class="notice-title mb-1">
                                 {% if item.type and item.type.lower() != 'none' %}

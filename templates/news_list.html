@@ -121,8 +121,7 @@
     <div data-list="{&quot;valueNames&quot;:[&quot;product&quot;,&quot;customer&quot;,&quot;rating&quot;,&quot;review&quot;,&quot;time&quot;],&quot;page&quot;:6}">
         <div class="row align-items-end justify-content-between pb-5 g-3">
             <div class="col-auto">
-                <h3>IT 뉴스</h3>
-                <p class="text-body-tertiary lh-sm mb-0">IT 관련 뉴스 모음</p>
+                <h3 class="ml-4">IT 뉴스</h3>
             </div>
             <div class="col-12 col-md-auto">
                 <div class="d-flex align-items-center gap-3">
@@ -294,10 +293,14 @@
                                                     <input type="hidden" name="category" value="{{ category }}">
                                                     {% endfor %}
                                                     {% endif %}
-                                                    <button type="submit" class="detail-link-btn" formaction="/news_detail/{{ item.id }}">
+                                                    <a type="submit" class="detail-link-btn" href="{{ item.news_link }}" target="_blank" rel="noopener noreferrer">
                                                         상세 페이지로 이동
                                                         <i class="fas fa-arrow-right"></i>
-                                                    </button>
+                                                    </a>
+                                                    <!-- <button type="submit" class="detail-link-btn" formaction="/report_detail/{{ item.id }}">
+                                                        상세 페이지로 이동
+                                                        <i class="fas fa-arrow-right"></i>
+                                                    </button> -->                                                    
                                                 </form>
                                             </div>
                                             <div>
