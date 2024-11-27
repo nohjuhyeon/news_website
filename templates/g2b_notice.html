@@ -430,8 +430,9 @@
         function updateFilterCount() {
             // URL 파라미터에서 선택된 카테고리 개수 확인
             const urlParams = new URLSearchParams(window.location.search);
-            const selectedCategories = urlParams.getAll('category');
-            const filterCount = selectedCategories.length;
+            const selectedCategories = urlParams.getAll('notice_type');
+            const selectedClasses = urlParams.getAll('notice_class');
+            const filterCount =+ selectedCategories.length + selectedClasses.length;
             
             document.getElementById('filterCount').textContent = filterCount;
             
