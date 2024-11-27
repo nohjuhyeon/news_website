@@ -10,10 +10,8 @@ class report_list(Document) :  # 상속을 위한 것                 # 데이�
     news_date : Optional[datetime] = None
     news_link : Optional[str] = None
     news_topic : Optional[str] = None
-    first_summary : Optional[str] = None
-    full_summary : Optional[str] = None
+    abtraction : Optional[str] = None
     category : List[str] = None
     news_keywords : List[str] = None
-    news_subject : Optional[str] = None
     class Settings :   
         name = "report_list"  # collection의 이름
