@@ -244,7 +244,7 @@ async def news_detail(request: Request, news_id: str,search_type: Optional[str]=
 async def list_get(request:Request):
     await request.form()
     today = datetime.now()
-    yesterday = today - timedelta(days=2)
+    yesterday = today - timedelta(days=1)
     today_str = today.strftime("%Y/%m/%d")
     yesterday_str = yesterday.strftime("%Y/%m/%d")
     conditions = {}
