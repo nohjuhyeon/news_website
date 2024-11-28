@@ -75,7 +75,7 @@ async def list_get(request:Request, page_number: Optional[int]=1,search_type: Op
         conditions["category"] = {"$in": category}
     
     total_list_pagination, pagination = await collection_report_list.getsbyconditionswithpagination(conditions
-                                                                     ,page_number,'start_date')
+                                                                     ,page_number,'news_date')
     
     return templates.TemplateResponse("report_list.html",context={'request':request,
                                                                 'items':total_list_pagination,
